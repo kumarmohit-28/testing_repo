@@ -1,9 +1,9 @@
 name: CI/CD
 
 on:
-  push:
-    branches:
-      - main
+  release:
+    types:
+      - published
   workflow_dispatch:
 
 jobs:
@@ -28,5 +28,7 @@ jobs:
           
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
             cd /var/www/html/testing_repo
-            git pull
+            git fetch --tags
+            latest_tag=$(git describe --tags --abbrev=0)
+            git checkout $latest_tag
           '
