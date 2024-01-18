@@ -60,6 +60,6 @@ jobs:
           sshpass -p $PASSWORD ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
             cd /var/www/html/Helix_LMS_Moodle_Backend/testing_repo
             git fetch --tags
-            latest_tag=$(git describe --tags --abbrev=0)
+            latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1) --abbrev=0)
             git checkout $latest_tag
           '
