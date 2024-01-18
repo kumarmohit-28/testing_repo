@@ -24,8 +24,8 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           password: ${{ secrets.EC2_PASSWORD }}
       - run: |
-          echo "$key" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${username}@${host}
+          chmod 600 "$key"
+          ssh -i "$key" "$username@$host"
           pwd
           ls
           cd /var/www/html/testing_repo
