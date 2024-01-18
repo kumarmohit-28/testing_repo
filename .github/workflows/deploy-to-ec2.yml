@@ -10,6 +10,7 @@ on:
 jobs:
   deploy-to-staging:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
 
     steps:
       - name: Checkout code
@@ -34,6 +35,7 @@ jobs:
 
   deploy-to-prod:
     runs-on: ubuntu-latest
+    if: github.event_name == 'release'
 
     steps:
       - name: Checkout code
@@ -57,7 +59,7 @@ jobs:
           
           sshpass -p $PASSWORD ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
             cd /var/www/html/Helix_LMS_Moodle_Backend/testing_repo
-            git pull origin
+            git fetch --tags
             latest_tag=$(git describe --tags --abbrev=0)
             git checkout $latest_tag
           '
