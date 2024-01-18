@@ -1,31 +1,32 @@
-# This is a basic workflow to help you get started with Actions
+name: CI/CD
 
-name: CI
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "main" ]
-
-  # Allows you to run this workflow manually from the Actions tab
+    branches:
+      - main
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  Deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-        with:
-          HOSTNAME: ${{ secrets.EC2_HOST }}
-          USER_NAME: ${{ secrets.EC2_USERNAME }}
-          PRIVATE_KEY: ${{ secrets.EC2_KEY }}
-      - run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        run: |
+          echo "${{ secrets.EC2_KEY }}" > private_key
+          chmod 600 private_key
+          eval "$(ssh-agent -s)"
+          ssh-add private_key
+
+      - name: Deploy to EC2
+        run: |
+          HOSTNAME="${{ secrets.EC2_HOST }}"
+          USER_NAME="${{ secrets.EC2_USERNAME }}"
+          
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-          pwd
-          ls
-          cd /var/www/html/testing_repo
-          git pull
+            cd /var/www/html/testing_repo
+            git pull
+          '
