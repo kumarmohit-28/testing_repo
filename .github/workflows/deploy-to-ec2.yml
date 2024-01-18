@@ -1,13 +1,14 @@
 name: CI/CD
 
 on:
+  push:
+    branches: [dev]  # Trigger for testing environment
   release:
-    types:
-      - published
+    types: [published]  # Trigger for production environment
   workflow_dispatch:
 
 jobs:
-  deploy:
+  deploy-to-staging:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,19 +17,47 @@ jobs:
 
       - name: Setup SSH
         run: |
-          echo "${{ secrets.EC2_KEY }}" > private_key
+          echo "${{ secrets.EC2_KEY_DEV }}" > private_key
           chmod 600 private_key
           eval "$(ssh-agent -s)"
           ssh-add private_key
 
       - name: Deploy to EC2
         run: |
-          HOSTNAME="${{ secrets.EC2_HOST }}"
-          USER_NAME="${{ secrets.EC2_USERNAME }}"
-          
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+          HOSTNAME="${{ secrets.EC2_HOST_DEV }}"
+          USER_NAME="${{ secrets.EC2_USERNAME_DEV }}"
+
+          $PASSWORD ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
             cd /var/www/html/testing_repo
-            git fetch --tags
+            git pull
+          '
+
+  deploy-to-prod:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+
+      - name: Setup SSH
+        run: |
+          echo "${{ secrets.EC2_KEY_PROD }}" > private_key
+          chmod 600 private_key
+          eval "$(ssh-agent -s)"
+          ssh-add private_key
+
+      - name: Deploy to EC2
+        run: |
+          HOSTNAME="${{ secrets.EC2_HOST_PROD }}"
+          USER_NAME="${{ secrets.EC2_USERNAME_PROD }}"
+          PASSWORD="${{ secrets.EC2_PASSWORD_PROD }}"
+          
+          sshpass -p $PASSWORD ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+            cd /var/www/html/Helix_LMS_Moodle_Backend/testing_repo
+            git pull origin
             latest_tag=$(git describe --tags --abbrev=0)
             git checkout $latest_tag
           '
