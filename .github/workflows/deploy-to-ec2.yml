@@ -32,6 +32,16 @@ jobs:
             cd /var/www/html/testing_repo
             git pull
           '
+      - name: Merge to Main
+        run: |
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+
+          git checkout main
+
+          git merge --no-ff --no-edit dev
+
+          git push origin main
 
   deploy-to-prod:
     runs-on: ubuntu-latest
