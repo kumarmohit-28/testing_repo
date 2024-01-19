@@ -16,6 +16,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+
       - name: Setup SSH
         run: |
           echo "${{ secrets.EC2_KEY_DEV }}" > private_key
