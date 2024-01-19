@@ -27,8 +27,9 @@ jobs:
         run: |
           HOSTNAME="${{ secrets.EC2_HOST_DEV }}"
           USER_NAME="${{ secrets.EC2_USERNAME_DEV }}"
+          PASSWORD="${{ secrets.EC2_PASSWORD_DEV }}"
 
-          $PASSWORD ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+          sshpass -p $PASSWORD ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
             cd /var/www/html/testing_repo
             git pull
           '
@@ -59,7 +60,7 @@ jobs:
           
           sshpass -p $PASSWORD ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
             cd /var/www/html/Helix_LMS_Moodle_Backend/testing_repo
-            git fetch --tags
+            git pull
             latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1) --abbrev=0)
             git checkout $latest_tag
           '
