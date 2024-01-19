@@ -16,9 +16,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install sshpass
-        run: sudo apt-get install -y sshpass
-
       - name: Setup SSH
         run: |
           echo "${{ secrets.EC2_KEY_DEV }}" > private_key
@@ -30,9 +27,8 @@ jobs:
         run: |
           HOSTNAME="${{ secrets.EC2_HOST_DEV }}"
           USER_NAME="${{ secrets.EC2_USERNAME_DEV }}"
-          PASSWORD="${{ secrets.EC2_PASSWORD_DEV }}"
 
-          sshpass -p $PASSWORD ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
             cd /var/www/html/testing_repo
             git pull
           '
